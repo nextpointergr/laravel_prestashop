@@ -34,58 +34,64 @@ class PrestashopClient
     /* ======================= CORE REQUEST ===================== */
     /* ========================================================= */
 
-    public function request(
-        string $entity,
-        string $method,
-        array $query = [],
-        array $payload = []
-    ): array {
+public function request(
+    string $entity,
+    string $method,
+    array $query = [],
+    array $payload = []
+): array {
 
-        $url = $this->baseUrl . '/module/psapi/api';
+    $url = $this->baseUrl . '/module/psapi/api';
 
-        $query = array_merge($query, [
-            'entity'  => $entity,
-            'method'  => $method,
-            'api_key' => $this->apiKey,
-        ]);
+    $query = array_merge($query, [
+        'entity' => $entity,
+        'method' => $method,
+    ]);
 
-        try {
+    try {
 
-            $http = Http::timeout($this->timeout)
-                ->retry(
-                    config('prestashop.retry.times', 3),
-                    config('prestashop.retry.sleep', 200),
-                    throw: false
-                )
-                ->acceptJson();
+        $http = Http::timeout($this->timeout)
+            ->retry(
+                config('prestashop.retry.times', 3),
+                config('prestashop.retry.sleep', 200),
+                throw: false
+            )
+            ->withHeaders([
+                'Accept' => 'application/json',
+                'X-Nextpointer-Token' => $this->apiKey,
+                'Authorization' => $this->apiKey, // fallback
+            ]);
 
-            // GET when no payload
-            $response = empty($payload)
-                ? $http->get($url, $query)
-                : $http->post($url . '?' . http_build_query($query), $payload);
+        $response = empty($payload)
+            ? $http->get($url, $query)
+            : $http->post($url . '?' . http_build_query($query), $payload);
 
-        } catch (ConnectionException $e) {
-            throw new ApiException(
-                'Connection to Prestashop failed: ' . $e->getMessage(),
-                0
-            );
-        }
-
-        if (!$response->successful()) {
-            throw new ApiException(
-                $response->body(),
-                $response->status()
-            );
-        }
-
-        $json = $response->json();
-
-        if (!is_array($json)) {
-            throw new ApiException('Invalid JSON response from Prestashop.');
-        }
-
-        return $this->normalizeResponse($json);
+    } catch (\Exception $e) {
+        throw new ApiException(
+            'Connection to Prestashop failed: ' . $e->getMessage(),
+            0
+        );
     }
+
+    if (!$response->successful()) {
+        throw new ApiException(
+            $response->body(),
+            $response->status()
+        );
+    }
+
+    $json = $response->json();
+
+    if (!is_array($json)) {
+        throw new ApiException('Invalid JSON response from Prestashop.');
+    }
+
+    return [
+        'data' => $json['data'] ?? [],
+        'meta' => $json['meta'] ?? [],
+        'raw'  => $json,
+    ];
+}
 
     /* ========================================================= */
     /* ===================== RESPONSE NORMALIZER ================ */
