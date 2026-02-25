@@ -15,9 +15,11 @@ class SyncManager
         $cursor = CursorStore::get($entity);
 
         do {
+            $limit = $baseQuery['limit'] ?? 100;
+
             $query = array_merge($baseQuery, [
                 'cursor' => $cursor,
-                'limit' => 100,
+                'limit'  => $limit,
             ]);
 
             $response = $client->request($entity, 'get', $query);
@@ -46,9 +48,11 @@ class SyncManager
         $cursor = CursorStore::get($entity);
 
         do {
+            $limit = $baseQuery['limit'] ?? 100;
+
             $query = array_merge($baseQuery, [
                 'cursor' => $cursor,
-                'limit' => 100,
+                'limit'  => $limit,
             ]);
 
             $response = $client->request($entity, 'get', $query);

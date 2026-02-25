@@ -50,7 +50,7 @@ class Categories
         return $this;
     }
 
-    
+
     public function create(array $data): array
     {
         return $this->client->request('categories', 'post', [], $data);
