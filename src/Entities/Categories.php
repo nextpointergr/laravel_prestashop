@@ -44,6 +44,13 @@ class Categories
         return $this->client->request('categories', 'get', $this->query);
     }
 
+    public function limit(int $limit): static
+    {
+        $this->query['limit'] = $limit;
+        return $this;
+    }
+
+    
     public function create(array $data): array
     {
         return $this->client->request('categories', 'post', [], $data);
