@@ -77,4 +77,10 @@ class Orders
             baseQuery: $this->query
         );
     }
+
+    public function only(array $fields): static
+    {
+        $this->query['only'] = implode(',', $fields);
+        return $this;
+    }
 }
