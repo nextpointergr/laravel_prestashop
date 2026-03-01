@@ -13,7 +13,7 @@ class SyncManager
         array $baseQuery = [],
         string $method = 'get'
     ): void {
-        $size = $baseQuery['limit'] ?? 100;
+        $size = (int)($baseQuery['limit'] ?? 100);
 
         self::chunk(
             entity: $entity,
@@ -37,8 +37,11 @@ class SyncManager
         string $method = 'get',
         int $size = 100
     ): void {
-        // αν έχεις offset στο baseQuery, το σεβόμαστε
         $offset = (int)($baseQuery['offset'] ?? 0);
+
+        // guards για να μην κολλήσει ΠΟΤΕ
+        $maxPages = (int)($baseQuery['max_pages'] ?? 100000); // τεράστιο default
+        $page = 0;
 
         while (true) {
             $query = array_merge($baseQuery, [
@@ -46,28 +49,37 @@ class SyncManager
                 'offset' => $offset,
             ]);
 
+            // μην στέλνεις εσωτερικά flags στο PS API
+            unset($query['max_pages']);
+
             $response = $client->request($entity, $method, $query);
 
             $data = $response['data'] ?? [];
             $meta = $response['meta'] ?? [];
 
-            if (!empty($data)) {
-                $callback($data);
+       
+            if (empty($data)) {
+                break;
             }
 
-          
-			
-			$hasMore = (bool)($meta['has_more'] ?? false);
-			if (!$hasMore) {
-				break;
-			}
+            $callback($data);
+            $hasMore = (bool)($meta['has_more'] ?? false);
+            if (!$hasMore) {
+                break;
+            }
 
-			
-			
+   
+            if (count($data) < $size) {
+                break;
+            }
 
             $offset += $size;
+            $page++;
 
-           
+          
+            if ($page >= $maxPages) {
+                break;
+            }
         }
     }
 
@@ -80,29 +92,45 @@ class SyncManager
         $offset = (int)($baseQuery['offset'] ?? 0);
         $limit  = (int)($baseQuery['limit'] ?? 100);
 
+        $maxPages = (int)($baseQuery['max_pages'] ?? 100000);
+        $page = 0;
+
         while (true) {
             $query = array_merge($baseQuery, [
                 'limit'  => $limit,
                 'offset' => $offset,
             ]);
 
+            unset($query['max_pages']);
+
             $response = $client->request($entity, $method, $query);
 
             $data = $response['data'] ?? [];
             $meta = $response['meta'] ?? [];
+
+            if (empty($data)) {
+                break;
+            }
 
             foreach ($data as $row) {
                 yield $row;
             }
 
             $hasMore = (bool)($meta['has_more'] ?? false);
-			if (!$hasMore) {
-				break;
-			}
+            if (!$hasMore) {
+                break;
+            }
 
+            if (count($data) < $limit) {
+                break;
+            }
 
             $offset += $limit;
-		
+            $page++;
+
+            if ($page >= $maxPages) {
+                break;
+            }
         }
     }
 }
