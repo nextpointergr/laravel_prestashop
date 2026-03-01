@@ -45,6 +45,11 @@ class Orders
         return $this->client->request('orders', 'get', $this->query);
     }
 
+    public function get(): array
+    {
+        return $this->client->request('orders', 'specific', $this->query);
+    }
+
     public function status(int $orderId, int $stateId, ?string $tracking = null): array
     {
         $payload = [
