@@ -55,19 +55,19 @@ class SyncManager
                 $callback($data);
             }
 
-            $countThisPage = count($data);
+          
+			
+			$hasMore = (bool)($meta['has_more'] ?? false);
+			if (!$hasMore) {
+				break;
+			}
 
-            // Τερματισμός όταν πάρουμε λιγότερα από limit
-            if ($countThisPage < $size) {
-                break;
-            }
+			
+			
 
             $offset += $size;
 
-            // Προαιρετικό: αν το API δίνει total count, μπορείς να σταματήσεις νωρίτερα
-            if (isset($meta['count']) && is_numeric($meta['count']) && $offset >= (int)$meta['count']) {
-                break;
-            }
+           
         }
     }
 
@@ -95,17 +95,14 @@ class SyncManager
                 yield $row;
             }
 
-            $countThisPage = count($data);
+            $hasMore = (bool)($meta['has_more'] ?? false);
+			if (!$hasMore) {
+				break;
+			}
 
-            if ($countThisPage < $limit) {
-                break;
-            }
 
             $offset += $limit;
-
-            if (isset($meta['count']) && is_numeric($meta['count']) && $offset >= (int)$meta['count']) {
-                break;
-            }
+		
         }
     }
 }
