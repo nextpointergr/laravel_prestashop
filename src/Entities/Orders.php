@@ -45,7 +45,7 @@ class Orders
         return $this->client->request('orders', 'get', $this->query);
     }
 
-    public function get(): array
+    public function specific(): array
     {
         return $this->client->request('orders', 'specific', $this->query);
     }
