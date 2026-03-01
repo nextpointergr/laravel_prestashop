@@ -42,12 +42,18 @@ class Orders
 
     public function get(): array
     {
-        return $this->client->request(
-            'orders',
-            $this->method,
-            $this->query
-        );
+      return $this->client->request(
+        'orders',
+        $this->method,
+        $this->query
+    );
     }
+
+public function offset(int $offset): static
+{
+    $this->query['offset'] = $offset;
+    return $this;
+}
 
 	 public function specific(): static
 	{
