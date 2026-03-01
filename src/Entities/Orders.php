@@ -49,11 +49,11 @@ class Orders
         );
     }
 
-    public function specific(): array
-    {
-         $this->method = 'specific';
-        return $this;
-    }
+	 public function specific(): static
+	{
+		$this->method = 'specific';
+		return $this;
+	}
 
     public function status(int $orderId, int $stateId, ?string $tracking = null): array
     {
