@@ -10,52 +10,83 @@ class SyncManager
         string $entity,
         PrestashopClient $client,
         callable $callback,
-        array $baseQuery = []
+        array $baseQuery = [],
+        string $method = 'get'
     ): void {
-        $cursor = CursorStore::get($entity);
+        $size = $baseQuery['limit'] ?? 100;
 
-        do {
-            $limit = $baseQuery['limit'] ?? 100;
+        self::chunk(
+            entity: $entity,
+            client: $client,
+            callback: function (array $rows) use ($callback) {
+                foreach ($rows as $row) {
+                    $callback($row);
+                }
+            },
+            baseQuery: $baseQuery,
+            method: $method,
+            size: $size
+        );
+    }
 
+    public static function chunk(
+        string $entity,
+        PrestashopClient $client,
+        callable $callback,
+        array $baseQuery = [],
+        string $method = 'get',
+        int $size = 100
+    ): void {
+        // αν έχεις offset στο baseQuery, το σεβόμαστε
+        $offset = (int)($baseQuery['offset'] ?? 0);
+
+        while (true) {
             $query = array_merge($baseQuery, [
-                'cursor' => $cursor,
-                'limit'  => $limit,
+                'limit'  => $size,
+                'offset' => $offset,
             ]);
 
-            $response = $client->request($entity, 'get', $query);
+            $response = $client->request($entity, $method, $query);
 
             $data = $response['data'] ?? [];
             $meta = $response['meta'] ?? [];
 
-            foreach ($data as $row) {
-                $callback($row);
+            if (!empty($data)) {
+                $callback($data);
             }
 
-            $cursor = $meta['cursor_next'] ?? null;
+            $countThisPage = count($data);
 
-            if ($cursor) {
-                CursorStore::set($entity, $cursor);
+            // Τερματισμός όταν πάρουμε λιγότερα από limit
+            if ($countThisPage < $size) {
+                break;
             }
 
-        } while (!empty($meta['has_more']));
+            $offset += $size;
+
+            // Προαιρετικό: αν το API δίνει total count, μπορείς να σταματήσεις νωρίτερα
+            if (isset($meta['count']) && is_numeric($meta['count']) && $offset >= (int)$meta['count']) {
+                break;
+            }
+        }
     }
 
     public static function lazy(
         string $entity,
         PrestashopClient $client,
-        array $baseQuery = []
+        array $baseQuery = [],
+        string $method = 'get'
     ): \Generator {
-        $cursor = CursorStore::get($entity);
+        $offset = (int)($baseQuery['offset'] ?? 0);
+        $limit  = (int)($baseQuery['limit'] ?? 100);
 
-        do {
-            $limit = $baseQuery['limit'] ?? 100;
-
+        while (true) {
             $query = array_merge($baseQuery, [
-                'cursor' => $cursor,
                 'limit'  => $limit,
+                'offset' => $offset,
             ]);
 
-            $response = $client->request($entity, 'get', $query);
+            $response = $client->request($entity, $method, $query);
 
             $data = $response['data'] ?? [];
             $meta = $response['meta'] ?? [];
@@ -64,12 +95,17 @@ class SyncManager
                 yield $row;
             }
 
-            $cursor = $meta['cursor_next'] ?? null;
+            $countThisPage = count($data);
 
-            if ($cursor) {
-                CursorStore::set($entity, $cursor);
+            if ($countThisPage < $limit) {
+                break;
             }
 
-        } while (!empty($meta['has_more']));
+            $offset += $limit;
+
+            if (isset($meta['count']) && is_numeric($meta['count']) && $offset >= (int)$meta['count']) {
+                break;
+            }
+        }
     }
 }

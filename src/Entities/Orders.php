@@ -10,7 +10,7 @@ class Orders
     protected PrestashopClient $client;
 
     protected array $query = [];
-
+    protected string $method = 'get';
     public function __construct(PrestashopClient $client)
     {
         $this->client = $client;
@@ -42,12 +42,17 @@ class Orders
 
     public function get(): array
     {
-        return $this->client->request('orders', 'get', $this->query);
+        return $this->client->request(
+            'orders',
+            $this->method,
+            $this->query
+        );
     }
 
     public function specific(): array
     {
-        return $this->client->request('orders', 'specific', $this->query);
+         $this->method = 'specific';
+        return $this;
     }
 
     public function status(int $orderId, int $stateId, ?string $tracking = null): array
@@ -64,22 +69,24 @@ class Orders
         return $this->client->request('orders', 'status', [], $payload);
     }
 
-    public function sync(callable $callback): void
+   public function sync(callable $callback): void
     {
         SyncManager::run(
             entity: 'orders',
             client: $this->client,
             callback: $callback,
-            baseQuery: $this->query
+            baseQuery: $this->query,
+            method: $this->method
         );
     }
 
-    public function lazy(): \Generator
+   public function lazy(): \Generator
     {
         return SyncManager::lazy(
             entity: 'orders',
             client: $this->client,
-            baseQuery: $this->query
+            baseQuery: $this->query,
+            method: $this->method
         );
     }
 
@@ -88,4 +95,17 @@ class Orders
         $this->query['only'] = implode(',', $fields);
         return $this;
     }
+	
+	public function chunk(int $size, callable $callback): void
+    {
+        SyncManager::chunk(
+            entity: 'orders',
+            client: $this->client,
+            callback: $callback,
+            baseQuery: $this->query,
+            method: $this->method,
+            size: $size
+        );
+    }
+
 }
