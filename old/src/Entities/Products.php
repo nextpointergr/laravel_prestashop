@@ -9,7 +9,6 @@ class Products
 {
     protected PrestashopClient $client;
     protected array $query = [];
-    protected string $method = 'get';
 
     public function __construct(PrestashopClient $client)
     {
@@ -40,9 +39,9 @@ class Products
         return $this;
     }
 
-    public function offset(int $offset): static
+    public function only(array $fields): static
     {
-        $this->query['offset'] = $offset;
+        $this->query['only'] = implode(',', $fields);
         return $this;
     }
 
@@ -52,19 +51,9 @@ class Products
         return $this;
     }
 
-    public function only(array $fields): static
-    {
-        $this->query['only'] = implode(',', $fields);
-        return $this;
-    }
-
     public function get(): array
     {
-        return $this->client->request(
-            'products',
-            $this->method,
-            $this->query
-        );
+        return $this->client->request('products', 'get', $this->query);
     }
 
     public function create(array $data): array
@@ -96,34 +85,11 @@ class Products
 
     public function sync(callable $callback): void
     {
-        SyncManager::run(
-            entity: 'products',
-            client: $this->client,
-            callback: $callback,
-            baseQuery: $this->query,
-            method: $this->method
-        );
-    }
-
-    public function chunk(int $size, callable $callback): void
-    {
-        SyncManager::chunk(
-            entity: 'products',
-            client: $this->client,
-            callback: $callback,
-            baseQuery: $this->query,
-            method: $this->method,
-            size: $size
-        );
+        SyncManager::run('products', $this->client, $callback, $this->query);
     }
 
     public function lazy(): \Generator
     {
-        return SyncManager::lazy(
-            entity: 'products',
-            client: $this->client,
-            baseQuery: $this->query,
-            method: $this->method
-        );
+        return SyncManager::lazy('products', $this->client, $this->query);
     }
 }
