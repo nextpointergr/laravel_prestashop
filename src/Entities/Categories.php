@@ -49,6 +49,13 @@ class Categories
         $this->query['limit'] = $limit;
         return $this;
     }
+    public function offset(int $offset): static
+    {
+        $this->query['offset'] = $offset;
+        return $this;
+    }
+
+
 
 
     public function create(array $data): array

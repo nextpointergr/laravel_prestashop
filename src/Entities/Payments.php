@@ -26,8 +26,25 @@ class Payments
         return $this;
     }
 
+    public function since(string $date): static
+    {
+        $this->query['since'] = $date;
+        return $this;
+    }
+
     public function get(): array
     {
         return $this->client->request('payments', 'get', $this->query);
     }
+    public function limit(int $limit): static
+    {
+        $this->query['limit'] = $limit;
+        return $this;
+    }
+    public function offset(int $offset): static
+    {
+        $this->query['offset'] = $offset;
+        return $this;
+    }
+
 }
