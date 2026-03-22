@@ -15,47 +15,42 @@ class Products
     {
         $this->client = $client;
     }
-
+    protected function with(array $params): static
+    {
+        $clone = clone $this;
+        $clone->query = array_merge($this->query, $params);
+        return $clone;
+    }
     public function id(int $id): static
     {
-        $this->query['id'] = $id;
-        return $this;
-    }
-
-    public function ids(array $ids): static
-    {
-        $this->query['ids'] = implode(',', $ids);
-        return $this;
+        return $this->with(['id' => $id]);
     }
 
     public function since(string $date): static
     {
-        $this->query['since'] = $date;
-        return $this;
+        return $this->with(['since' => $date]);
     }
 
     public function cursor(string $cursor): static
     {
-        $this->query['cursor'] = $cursor;
-        return $this;
-    }
-
-    public function offset(int $offset): static
-    {
-        $this->query['offset'] = $offset;
-        return $this;
+        return $this->with(['cursor' => $cursor]);
     }
 
     public function limit(int $limit): static
     {
-        $this->query['limit'] = $limit;
-        return $this;
+        return $this->with(['limit' => $limit]);
+    }
+
+    public function offset(int $offset): static
+    {
+        return $this->with(['offset' => $offset]);
     }
 
     public function only(array $fields): static
     {
-        $this->query['only'] = implode(',', $fields);
-        return $this;
+        return $this->with([
+            'only' => implode(',', $fields)
+        ]);
     }
 
     public function get(): array

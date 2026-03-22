@@ -10,53 +10,66 @@ class Categories
     protected PrestashopClient $client;
     protected array $query = [];
 
-    public function __construct(PrestashopClient $client)
+    public function __construct(PrestashopClient $client, array $query = [])
     {
         $this->client = $client;
+        $this->query = $query;
+    }
+
+    // 🔥 IMMUTABLE HELPER
+    protected function with(array $params): static
+    {
+        return new static(
+            $this->client,
+            array_merge($this->query, $params)
+        );
     }
 
     public function id(int $id): static
     {
-        $this->query['id'] = $id;
-        return $this;
+        return $this->with(['id' => $id]);
     }
 
     public function since(string $date): static
     {
-        $this->query['since'] = $date;
-        return $this;
+        return $this->with(['since' => $date]);
+    }
+
+    public function until(string $date): static
+    {
+        return $this->with(['until' => $date]);
     }
 
     public function cursor(string $cursor): static
     {
-        $this->query['cursor'] = $cursor;
-        return $this;
+        return $this->with(['cursor' => $cursor]);
     }
 
     public function only(array $fields): static
     {
-        $this->query['only'] = implode(',', $fields);
-        return $this;
-    }
-
-    public function get(): array
-    {
-        return $this->client->request('categories', 'get', $this->query);
+        return $this->with([
+            'only' => implode(',', $fields)
+        ]);
     }
 
     public function limit(int $limit): static
     {
-        $this->query['limit'] = $limit;
-        return $this;
+        return $this->with(['limit' => $limit]);
     }
+
     public function offset(int $offset): static
     {
-        $this->query['offset'] = $offset;
-        return $this;
+        return $this->with(['offset' => $offset]);
     }
 
-
-
+    public function get(): array
+    {
+        return $this->client->request(
+            'categories',
+            'get',
+            $this->query
+        );
+    }
 
     public function create(array $data): array
     {
