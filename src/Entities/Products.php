@@ -66,6 +66,15 @@ class Products
     {
         return $this->client->request('products', 'post', [], $data);
     }
+    public function updateOrCreate(array $data, ?int $id = null): array
+    {
+        // 1. Αν δοθεί ID → update
+        if ($id !== null) {
+            $data['id'] = $id;
+            return $this->client->request('products', 'post', [], $data);
+        }
+        return $this->client->request('products', 'post', [], $data);
+    }
 
     public function update(int $id, array $data): array
     {
