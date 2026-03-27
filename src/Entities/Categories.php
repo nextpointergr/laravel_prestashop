@@ -10,66 +10,46 @@ class Categories
     protected PrestashopClient $client;
     protected array $query = [];
 
-    public function __construct(PrestashopClient $client, array $query = [])
+    public function __construct(PrestashopClient $client)
     {
         $this->client = $client;
-        $this->query = $query;
-    }
-
-    // 🔥 IMMUTABLE HELPER
-    protected function with(array $params): static
-    {
-        return new static(
-            $this->client,
-            array_merge($this->query, $params)
-        );
     }
 
     public function id(int $id): static
     {
-        return $this->with(['id' => $id]);
+        $this->query['id'] = $id;
+        return $this;
     }
 
     public function since(string $date): static
     {
-        return $this->with(['since' => $date]);
-    }
-
-    public function until(string $date): static
-    {
-        return $this->with(['until' => $date]);
+        $this->query['since'] = $date;
+        return $this;
     }
 
     public function cursor(string $cursor): static
     {
-        return $this->with(['cursor' => $cursor]);
+        $this->query['cursor'] = $cursor;
+        return $this;
     }
 
     public function only(array $fields): static
     {
-        return $this->with([
-            'only' => implode(',', $fields)
-        ]);
-    }
-
-    public function limit(int $limit): static
-    {
-        return $this->with(['limit' => $limit]);
-    }
-
-    public function offset(int $offset): static
-    {
-        return $this->with(['offset' => $offset]);
+        $this->query['only'] = implode(',', $fields);
+        return $this;
     }
 
     public function get(): array
     {
-        return $this->client->request(
-            'categories',
-            'get',
-            $this->query
-        );
+        return $this->client->request('categories', 'get', $this->query);
     }
+
+    public function limit(int $limit): static
+    {
+        $this->query['limit'] = $limit;
+        return $this;
+    }
+
 
     public function create(array $data): array
     {

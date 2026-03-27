@@ -5,6 +5,7 @@ namespace Nextpointer\Prestashop\Client;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\ConnectionException;
+use Nextpointer\Prestashop\Entities\Customers;
 use Nextpointer\Prestashop\Exceptions\ApiException;
 use Nextpointer\Prestashop\Entities\Products;
 use Nextpointer\Prestashop\Entities\Orders;
@@ -140,6 +141,12 @@ public function request(
     public function taxes(): Taxes
     {
         return new Taxes($this);
+    }
+
+
+    public function customers(): Customers
+    {
+        return new Customers($this);
     }
 
     public function payments(): Payments
