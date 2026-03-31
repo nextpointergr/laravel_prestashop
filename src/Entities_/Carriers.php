@@ -4,7 +4,7 @@ namespace Nextpointer\Prestashop\Entities;
 
 use Nextpointer\Prestashop\Client\PrestashopClient;
 
-class Taxes
+class Carriers
 {
     protected PrestashopClient $client;
     protected array $query = [];
@@ -46,21 +46,14 @@ class Taxes
 
     public function get(): array
     {
-        return $this->client->request('taxes', 'get', $this->query);
+        return $this->client->request('carriers', 'get', $this->query);
     }
 
-    /**
-     * Επιστρέφει το συνολικό αριθμό φορολογικών συντελεστών
-     */
     public function count(): int
     {
         $originalQuery = $this->query;
-
-        // Ζητάμε μόνο 1 εγγραφή για να πάρουμε το meta['total'] γρήγορα
         $this->limit(1);
         $response = $this->get();
-
-        // Επαναφορά του αρχικού query
         $this->query = $originalQuery;
 
         return $response['meta']['total'] ?? 0;

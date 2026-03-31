@@ -136,15 +136,4 @@ class Products
 
 
     }
-
-    public function count(): int
-    {
-        $originalQuery = $this->query;
-        $this->limit(1);
-        $response = $this->get();
-        $this->query = $originalQuery;
-
-        return $response['meta']['total'] ?? 0;
-    }
-
 }
