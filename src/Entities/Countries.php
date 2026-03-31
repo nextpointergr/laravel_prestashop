@@ -28,9 +28,7 @@ class Countries
 
     public function get(): array
     {
-        // Εδώ καλούμε τη μέθοδο 'get_countries' που περιμένει ο GeographyService σου
-        $this->query['method'] = 'get_countries';
-        return $this->client->request('geography', 'get', $this->query);
+        return $this->client->request('geography', 'get_countries', $this->query);
     }
 
     public function count(): int

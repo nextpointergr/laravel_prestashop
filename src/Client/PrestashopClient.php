@@ -2,10 +2,12 @@
 
 namespace Nextpointer\Prestashop\Client;
 
+
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\ConnectionException;
 use Nextpointer\Prestashop\Entities\Customers;
+use Nextpointer\Prestashop\Entities\States;
 use Nextpointer\Prestashop\Exceptions\ApiException;
 use Nextpointer\Prestashop\Entities\Products;
 use Nextpointer\Prestashop\Entities\Orders;
@@ -13,7 +15,7 @@ use Nextpointer\Prestashop\Entities\Categories;
 use Nextpointer\Prestashop\Entities\Carriers;
 use Nextpointer\Prestashop\Entities\Taxes;
 use Nextpointer\Prestashop\Entities\Payments;
-
+use Nextpointer\Prestashop\Entities\Countries;
 class PrestashopClient
 {
     protected string $baseUrl;
@@ -152,5 +154,14 @@ public function request(
     public function payments(): Payments
     {
         return new Payments($this);
+    }
+    public function countries()
+    {
+        return new Countries($this);
+    }
+
+    public function states()
+    {
+        return new States($this);
     }
 }

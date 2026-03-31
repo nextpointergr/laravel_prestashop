@@ -34,8 +34,6 @@ class States
 
     public function get(): array
     {
-        // Εδώ καλούμε τη μέθοδο 'get_states'
-        $this->query['method'] = 'get_states';
-        return $this->client->request('geography', 'get', $this->query);
+        return $this->client->request('geography', 'get_states', $this->query);
     }
 }
